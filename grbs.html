@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>A Visual History of Gamma-Ray Burst Discovery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Isaac Shivvers">
+	<meta name="keywords" content="gamma ray burst,gamma-ray burst,GRB,gamma,berkeley,Isaac,Shivvers,astronomy,astrophysics,outreach,map,discover,discovery,research">
+	<link rel="icon" type="image/png" href="img/favicon.ico">
+
+	<!-- some javascript -->
+	<script src="js/jquery-1.9.1.js"></script>
+	<script src="js/jquery-ui-1.10.3.custom.js"></script>
+	<script src="js/bootstrap.js"></script>
+	<script src="js/d3.v3.min.js"></script>
+    <!-- some style -->
+    <link href="css/bootstrap.grbs.css" rel="stylesheet">
+	<link href="css/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  ga('create', 'UA-43121872-3', 'berkeley.edu');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+
+  <body>
+	<div id="loading_txt_div" class="loading_txt">
+		<h1 style="text-align:center" id="loading_txt">Loading</h1>
+		<img src="img/loading.gif" class="center_img" id="loading_img"><br>
+		<h4 style="text-align:center" id="loading_message"></h4>
+	</div>
+	<div id="dim_wrapper" class="dim_wrapper">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand">A History of Gamma-Ray Burst Discovery</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="sne.html">SNe</a></li>
+			  <li class="active"><a href="grbs.html">GRBs</a></li>
+			  <li><a href="pulsars.html">Pulsars</a></li>
+              <li><a onclick="show_info()">About</a></li>
+			  <li class="active"><a onclick="playpause()" id="play">Pause</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+		<a class="brand" style="float:right; font-family:monospace" id="current_day">--</a>
+        </div>
+      <div class="center" id="slider"></div>
+      </div>
+    </div>
+	
+    <div class="hero-unit" style="margin-top:60px">
+	  <div class="center" id="main_svg"></div>
+	</div> <!-- /hero -->
+	<div class="container">	
+	  <div class="row">
+  	    <div class="span8 offset2" id="main_txt">
+		</div> <!-- /span -->
+	  </div> <!-- /row -->
+    </div> <!-- /container -->
+    </div>  <!-- /dim-wrapper -->
+
+<div style="display:none" id="about">
+	<!-- An invisible container for the About page -->
+	<h1>About</h1>
+	<p>
+		This map shows the position of almost every known gamma-ray burst (often called GRBs), at least those for
+		which astronomers have been able to measure a position (GRBs are often detected without any way of
+		knowing where exactly they came from).  
+		The map is an <a target="_blank" href="http://en.wikipedia.org/wiki/Equirectangular_projection">
+		equirectangular projection</a> of the night sky 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Galactic_coordinates">in galactic coordinates</a>,
+		showing the entire sky as visible from Earth with our Milky Way galaxy running through the middle.
+		The size of each circle illustrates the relative brightness (as seen from Earth) for each GRB,
+		and the length of time each circle persists is scaled to 1/20<sup>th</sup> of the true length of
+		the burst. Note that many of the earlier GRBs were detected by instruments that were not able to measure
+		the true brightness or length of the burst - average values are used when showing these bursts on the map.
+		The slider on top of the page lets you move through history, exploring when different GRBs were
+		first discovered.  Look to the counter in the top right to see what date range is currently shown, and
+		click on any GRB to learn more about it.
+	</p>
+	<p>
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Gamma_ray_burst">A gamma-ray burst</a>
+		is a short flash of incredibly high-energy light (gamma-rays). There are two major types,
+		called long and short GRBs because of the length of time of the burst. Long GRBs are more common
+		and usually last about 30 seconds, while short GRBs last only an average of 0.3 seconds. Long
+		gamma bursts seem to be associated with core-collapse supernovae of incredibly massive stars,
+		also known as <a target="_blank" href="http://en.wikipedia.org/wiki/Hypernovae">hypernovae</a>. In a hypernova,
+		the core of the star collapses into a black hole and relativistically-beamed jets of gamma-rays
+		blast out of the exploding star, forming the short and bright bursts we see here on Earth.
+		Short GRBs are less well-understood, but many researchers believe they could be caused by 
+		the merger of two <a target="_blank" href="http://en.wikipedia.org/wiki/Neutron_star">neutron stars</a> -
+		exactly what causes short GRBs is an important question that researchers are still working to figure out.
+	</p>
+	<p>
+		Our atmosphere does not allow gamma-rays through it, which is usually a good thing because it protects
+		us from their damaging effects.  However, it does make it difficult to study GRBs. In fact, the main
+		tools researchers use to detect GRBs are space satellites, flying far above the Earth's atmosphere.  The first GRB was
+		detected in 1967 by the <a target=_"blank" href="http://en.wikipedia.org/wiki/Vela_satellite">Vela</a> satellites
+		which were built by the USA to detect nuclear weapons testing by the Soviet Union (nuclear bombs emit
+		gamma-rays). The military knew that the bursts they detected were not caused by nuclear testing but did not know
+		what could be causing them.	The early detections were classified until 1973, when the USA made the
+		first public announcement describing these inexplicable bursts. There have now been several
+		generations of satellites designed to help study GRBs and we've learned a lot more about them (see 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/History_of_gamma-ray_burst_research">here</a>
+		for a good summary). The map on this page includes all of the GRBs astronomers have been able to 
+		observe with well-measured positions - right now, that's <ins id="grb_number">--</ins> GRBs.
+	</p>
+	<h4>Trends</h4>
+	<p>
+		Because they come from very distant galaxies (which are equally spaced in all directions),
+		GRBs happen all over the sky.  Most of the trends and patterns visible in the animation above are
+		due to the methods astronomers use to look for and discover GRBs and are not real trends in GRB
+		properties.  For example, early GRB-detecting satellites were not very good at measuring how
+		long a GRB lasts, and so <a onclick="go_to('691017A'); highlight(['701201','701230','691017A','710315','691017','701230','710318','690703','691007','710102','700822']);">
+		the early GRBs</a> are shown with an average duration, while the
+		<a onclick="go_to('120926'); highlight(['120926','121001A','121005'])">more recent GRBs</a>
+		are shown to fade over a length of time scaled to their true (observed) duration.
+		Here are a few other interesting trends:
+		<div class="row">
+			<div class="span6 offset1">
+			<ul>
+				<li>Modern GRB-detecting satellites are more capable than the early satellites, and so 
+					there are more GRBs being detected today than ever before (though the true rate
+					of GRBs occurring in the universe has not actually changed)</li>
+				<li>The sensitivity of GRB-detecting satellites (and their ability to identify where a
+					burst came from) depends strongly on the relative positions of the satellites in orbit. There are a few
+					times you can identify paths across the sky where satellite configurations were
+					particularly sensitive; <a onclick="go_to('950620A'); highlight(['950808','960707','960404C','960625','960624','960623A','960605A','951117A','951112C','951124A','951107C','951102C','951203','960524','951213A','951014','951220','951010D','951228','960111','960114','960428','960425','960119','960422','960124A','950909','960418D','960418A','950904C','960409D','960409C','960408','960206A','960216','950630','950701','960321','950818','950706','950809','950713A','950804A']); play();">here</a>, for example.</li>
+				<li>Unlike supernovae, we can detect GRBs through the gas and dust of our Milky Way galaxy.
+					The gas and dust at the center of our galaxy blocks most of the optical light from supernovae,
+					but gamma-rays from GRBs pass through with little trouble.</li>
+			</ul>
+			</div> <!-- /span -->
+		</div> <!-- /row -->
+	</p>
+	</p>
+	<h4>Acknowledgements</h4>
+	<div class="row">
+		<div class="span6">
+			<p> 
+				This website was built by <a target="_blank" href="http://astro.berkeley.edu/~ishivvers/">
+				Isaac Shivvers</a>, an astrophysics graduate student
+				at UC Berkeley.  Feel free to contact me with any questions or comments at 
+				<tt><span style="unicode-bidi:bidi-override; direction: rtl;">ude.yelekreb.ortsa@srevvihsi</span></tt>.
+			</p>
+			<p>
+				The GRB data behind this site was assembled from NASA's 
+				<a target="_blank" href="http://heasarc.gsfc.nasa.gov/grbcat/">Gamma-Ray Burst Catalog</a>,
+				the <a target="_blank" href="http://swift.gsfc.nasa.gov/archive/grb_table.html/">SWIFT Gamma-Ray Burst Table</a>,
+				and the <a target="_blank" href="http://heasarc.gsfc.nasa.gov/db-perl/W3Browse/w3table.pl?tablehead=name%3Dfermigbrst&Action=More+Options">
+				FERMI Gamma-Ray Burst Catalog</a>.  The map is automatically updated with newly-discovered GRBs every week.
+			</p>
+			<p>
+				The background image of the night sky is courtesy of ESO/S.Brunier, and 
+				was produced as part of the <a target="_blank" href="http://www.eso.org/public/images/eso0932a/">
+				European Southern Observatory's	GigaGalaxy Zoom project</a>.
+			</p>
+			<p> The website itself was built using <a target="_blank" href="http://d3js.org/">D3</a>,
+				<a target="_blank" href="http://jquery.com/">jQuery</a>,
+				<a target="_blank" href="http://twitter.github.io/bootstrap/">the Twitter Bootstrap</a>,
+				and <a target="_blank" href="http://www.python.org/">Python</a>.
+				Huge thanks to all of the developers working on these great projects!
+			</p>
+			<p>
+				&copy; Isaac Shivvers, 2013
+			</p>
+		</div> <!-- /span -->
+		<div class="span2">
+			<img src="img/berkeley_seal_T.gif">
+		</div> <!-- /span -->
+	</div> <!-- /row -->
+	<br><br>
+</div>
+
+<!-- the end-of-animation info window -->
+<div id="end_message" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Questions?</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+	    Have questions about what you see here, or any trends you've noticed?<br>
+		Check out the <a onclick="show_info()" data-dismiss="modal">About</a> page for more info!
+	</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary" data-dismiss="modal" onclick="show_info()">About</button>
+  </div>
+</div>
+
+    <!-- more javascript
+    ================================================== -->
+	<script src="js/mylib.js"></script>
+	<script src="js/grbs.json"></script>
+	<script>
+	var CHROME = /chrome/i.test(navigator.userAgent);
+    var thispage = 'grbs';
+    // insert our slider into the #slider div
+	$(function() {
+		$("#slider").slider({ min:0, max:timing_array.length-1,
+			slide: function( event, ui ) {
+				clearInterval(program);
+				tstep = ui.value;
+				repeat_step();
+				pause();
+			}
+		});
+	});
+	
+	// put the number of GRBs into the about div
+	document.getElementById('grb_number').innerHTML = String(all_objs.length);
+	
+	// once everything has loaded, change the loading text to a play link
+	function start_show() {
+		$("#loading_txt_div").remove();
+		$("#dim_wrapper").animate({"opacity":1.0});
+		document.getElementById('dim_wrapper').style['cssText'] = "z-index: -10";
+		program = setInterval(step_forward, 100);
+		playing = true;
+	}
+	var program
+	var playing
+	var ldtxt = document.getElementById('loading_txt');
+	var ldimg = document.getElementById('loading_img');
+	var ldmsg = document.getElementById('loading_message');
+	window.onload = function() {
+		ldtxt.innerHTML = "Play";
+		ldimg.src = "img/play.gif";
+		ldmsg.innerHTML = "drag the slider on top to change the date range shown<br>click around to learn more";
+		if (CHROME != true) {
+			ldmsg.innerHTML += "<br><br>NOTE: this animation works best in recent versions of <a href='http://www.google.com/chrome'>Chrome</a>";
+		}
+		ldtxt.onclick = start_show;
+		ldimg.onclick = start_show;
+	}
+	</script>
+
+  </body>
+</html>

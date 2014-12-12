@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>A Map of Known Pulsars</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Isaac Shivvers">
+	<meta name="keywords" content="pulsars,psr,pulsar,berkeley,Isaac,Shivvers,astronomy,astrophysics,outreach,map,discover,discovery,research">
+	<link rel="icon" type="image/png" href="img/favicon.ico">
+
+	<!-- some javascript -->
+	<script src="js/jquery-1.9.1.js"></script>
+	<script src="js/jquery-ui-1.10.3.custom.js"></script>
+	<script src="js/bootstrap.js"></script>
+	<script src="js/d3.v3.min.js"></script>
+    <!-- some style -->
+    <link href="css/bootstrap.plsrs.css" rel="stylesheet">
+	<link href="css/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  ga('create', 'UA-43121872-4', 'berkeley.edu');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+
+  <body>
+	<div id="loading_txt_div" class="loading_txt">
+		<h1 style="text-align:center" id="loading_txt">Loading</h1>
+		<img src="img/loading.gif" class="center_img" id="loading_img"><br>
+		<h4 style="text-align:center" id="loading_message"></h4>
+	</div>
+	<div id="dim_wrapper" class="dim_wrapper">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand">A Map of Known Pulsars</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="sne.html">SNe</a></li>
+			  <li><a href="grbs.html">GRBs</a></li>
+			  <li class="active"><a href="pulsars.html">Pulsars</a></li>
+              <li><a onclick="show_info()">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+		<a class="brand" style="float:right; font-family:monospace" id="current_dist">--</a>
+        </div><!-- /container -->
+      <div class="center" id="slider"></div>
+      </div><!-- /navbar-inner -->
+    </div><!-- /navbar -->
+	
+    <div class="hero-unit" style="margin-top:60px">
+	  <div class="center" id="main_svg"></div>
+	</div> <!-- /hero -->
+	<div class="container">	
+	  <div class="row">
+  	    <div class="span8 offset2" id="main_txt">
+		</div> <!-- /span -->
+	  </div> <!-- /row -->
+    </div> <!-- /container -->
+  </div>  <!-- /dim-wrapper -->
+
+<div style="display:none" id="about">
+	<!-- An invisible container for the About page -->
+	<h1>About</h1>
+	<p> 
+		This map shows the position of almost every radio pulsar known to modern researchers.
+		The map is an <a target="_blank" href="http://en.wikipedia.org/wiki/Equirectangular_projection">
+		equirectangular projection</a> of the night sky 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Galactic_coordinates">in galactic coordinates</a>,
+		showing the entire sky as visible from Earth with our Milky Way galaxy running through the middle.
+		The size of each circle illustrates the relative brightness (as seen from Earth) for each pulsar,
+	    and each circle emits pulses at the true frequency of the pulsar.
+		The slider on top of the page lets you move through space, exploring different distances from Earth.
+		Look to the counter in the top right to see what distance range is currently shown. Click on any
+		pulsar to learn more about that object.
+	</p>
+	<p>
+		A <a target="_blank" href="http://en.wikipedia.org/wiki/Pulsar">pulsar</a> is a specific type of highly-magnetized
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Neutron_star">neutron star</a>, created when
+		a massive star undergoes a
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Core_collapse_supernova">core-collapse supernova</a>.
+		Pulsars are very small (for a star) and rotate very quickly, emitting strong and narrow beams of radiation from 
+		their magnetic poles.
+		If we (on Earth) happen to fall within the path of this beam as it sweeps around the sky
+		the pulsar acts like a lighthouse with its beam periodically passing over us. Just like a lighthouse,
+		the observable result for us on Earth is that the object gets very bright for a short amount of time and
+		quickly fades away, over and over and over again, creating the strong pulses for which pulsars are  
+		named. This map includes <ins id="psr_number">--</ins> pulsars discovered by radio telescopes.
+	</p>
+	<p>
+		Researchers have been looking for and studying pulsars since 
+		1967, when <a onclick="go_to('B1919+21');">pulsar B1919+21</a>
+		was first discovered. At first, this object was an enigma; because its pulses were so consistent, some researchers
+		(semi-jokingly) wondered whether we had found a beacon from some alien race. Now we know that pulsars
+		occur naturally, though they may yet help us communicate with aliens: NASA included a 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Pioneer_Plaque#Relative_position_of_the_Sun_to_the_center_of_the_Galaxy_and_14_pulsars">
+		map of our location	in the galaxy</a> using pulsars as landmarks on the Pioneer and Voyager Satellites, which are
+		right now on their way out of our solar system. There are other (more practical) reasons to study pulsars too:
+		they have helped astronomers 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/PSR_B1913%2B16">test the theory of General Relativity</a>,
+		learn about the very thin gasses in between the stars, and much more.
+		Almost all of the pulsars we know about are in our own Milky Way galaxy; though researchers are sure they are out there,
+		pulsars in other galaxies are usually too far away and too faint for our telescopes to identify. 
+		The only exceptions are the few bright pulsars we find in the Milky Way's two best-known satellite galaxies, the
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Magellanic_Clouds">Magellanic Clouds</a>.
+		These satellite galaxies are very close to the Milky Way which allows researchers to
+		identify the pulsars they harbor. 
+	</p>
+	<h4>Trends</h4>
+	<p>
+		There are several interesting trends you can spot in the animation above.  For example, Our Milky Way galaxy
+		is shaped like a very large and thick disk, and we (on Earth) are out towards the radial edge of that disk but
+		close to the middle plane of it.  That means that the pulsars (and other stars)
+		<a onclick="show_bin(1);">relatively nearby</a> are visible in all directions, but if you look only
+		at objects that are <a onclick="show_bin(25);">further away</a>, they are almost all in the plane of the galaxy.
+		Here are some other trends to look for:
+		<div class="row">
+			<div class="span6 offset1">
+			<ul>
+				<li>You can find a wide range in the periods of different pulsars, ranging from
+					<a onclick="go_to('J1518+4904');">the very fast</a> to
+					<a onclick="go_to('J1503+2111');">the pretty slow</a>.</li>
+				<li>Our galaxy has several dense concentrations of stars (and pulsars) called
+					<a target="_blank" href="http://en.wikipedia.org/wiki/Globular_cluster">globular clusters</a>,
+					kind of like mini galaxies. 
+					These globular clusters tend to be the hosts for the distant pulsars that are not
+					in the plane of the galaxy. See <a onclick="go_to('B1310+18');">here</a> and 
+					<a onclick="go_to('J0514-4002A');">here</a>, for example.</li>
+				<li>Because they're the most distant pulsars we know about, it's very easy to find
+				    the pulsars that are in our satellite galaxies, the <a onclick="show_bin(49);">Large</a>
+				    and the	<a onclick="show_bin(50);">Small Magellanic Clouds</a>.</li>
+			</ul>
+			</div> <!-- /span -->
+		</div> <!-- /row -->
+	</p>
+	
+	<h4>Acknowledgements</h4>
+	<div class="row">
+		<div class="span6">
+			<p> 
+				This website was built by <a target="_blank" href="http://astro.berkeley.edu/~ishivvers/">
+				Isaac Shivvers</a>, an astrophysics graduate student
+				at UC Berkeley.  Feel free to contact me with any questions or comments at 
+				<tt><span style="unicode-bidi:bidi-override; direction: rtl;">ude.yelekreb.ortsa@srevvihsi</span></tt>.
+			</p>
+			<p>
+				The pulsar data behind this site was assembled from
+				<a target="_blank" href="http://www.atnf.csiro.au/people/pulsar/psrcat/">the Australia Telescope National
+				Facility's pulsar database</a>.
+			</p>
+			<p>
+				The background image of the night sky is courtesy of ESO/S.Brunier, and 
+				was produced as part of the <a target="_blank" href="http://www.eso.org/public/images/eso0932a/">
+				European Southern Observatory's	GigaGalaxy Zoom project</a>.
+			</p>
+			<p> The website itself was built using <a target="_blank" href="http://d3js.org/">D3</a>,
+				<a target="_blank" href="http://jquery.com/">jQuery</a>,
+				<a target="_blank" href="http://twitter.github.io/bootstrap/">the Twitter Bootstrap</a>,
+				and <a target="_blank" href="http://www.python.org/">Python</a>.
+				Huge thanks to all of the developers working on these great projects!
+			</p>
+			<p>
+				&copy; Isaac Shivvers, 2013
+			</p>
+		</div> <!-- /span -->
+		<div class="span2">
+			<img src="img/berkeley_seal_T.gif">
+		</div> <!-- /span -->
+	</div> <!-- /row -->
+	<br><br>
+</div> <!-- /about -->
+
+<!-- the end-of-animation info window -->
+<div id="end_message" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Questions?</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+	    Have questions about what you see here, or any trends you've noticed?<br>
+		Check out the <a onclick="show_info()" data-dismiss="modal">About</a> page for more info!
+	</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary" data-dismiss="modal" onclick="show_info()">About</button>
+  </div>
+</div>
+
+    <!-- more javascript
+    ================================================== -->
+	<script src="js/mylib.js"></script>
+	<script src="js/plsrs.json"></script>
+	<script>
+	var CHROME = /chrome/i.test(navigator.userAgent);
+	var thispage = 'plsrs';
+    // insert our slider into the #slider div
+	$(function() {
+		$("#slider").slider({ min:0, max:timing_array.length-1,
+			slide: function( event, ui ) {
+				show_bin(ui.value);
+			}
+		});
+	});
+	
+	// put the number of pulsars into the about div
+	document.getElementById('psr_number').innerHTML = String(all_objs.length);
+	
+	// once everything has loaded, change the loading text to a play link
+	function start_show() {
+		$("#loading_txt_div").remove();
+		$("#dim_wrapper").animate({"opacity":1.0});
+		document.getElementById('dim_wrapper').style['cssText'] = "z-index: -10";
+		show_bin(0);
+	}
+	var ldtxt = document.getElementById('loading_txt');
+	var ldimg = document.getElementById('loading_img');
+	var ldmsg = document.getElementById('loading_message');
+	window.onload = function() {
+		ldtxt.innerHTML = "Go";
+		ldimg.src = "img/play.gif";
+		ldmsg.innerHTML = "drag the slider on top to change the distance range shown<br>click around to learn more";
+		if (CHROME != true) {
+			ldmsg.innerHTML += "<br><br>NOTE: this site works best with recent versions of <a href='http://www.google.com/chrome'>Chrome</a>";
+		}
+		ldtxt.onclick = start_show;
+		ldimg.onclick = start_show;
+	}
+	</script>
+
+  </body>
+</html>

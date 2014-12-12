@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>A Visual History of Supernova Discovery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Isaac Shivvers">
+	<meta name="keywords" content="supernovae,SN,supernova,berkeley,Isaac,Shivvers,astronomy,astrophysics,outreach,map,discover,discovery,research">
+	<link rel="icon" type="image/png" href="img/favicon.ico">
+
+	<!-- some javascript -->
+	<script src="js/jquery-1.9.1.js"></script>
+	<script src="js/jquery-ui-1.10.3.custom.js"></script>
+	<script src="js/bootstrap.js"></script>
+	<script src="js/d3.v3.min.js"></script>
+    <!-- some style -->
+    <link href="css/bootstrap.sne.css" rel="stylesheet">
+	<link href="css/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  ga('create', 'UA-43121872-2', 'berkeley.edu');
+	  ga('send', 'pageview');
+	</script>
+  </head>
+
+  <body>
+	<div id="loading_txt_div" class="loading_txt">
+		<h1 style="text-align:center" id="loading_txt">Loading</h1>
+		<img src="img/loading.gif" class="center_img" id="loading_img"><br>
+		<h4 style="text-align:center" id="loading_message"></h4>
+	</div>
+	<div id="dim_wrapper" class="dim_wrapper">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand">A History of Supernova Discovery</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+			  <li class="active"><a href="sne.html">SNe</a></li>
+              <li><a href="grbs.html">GRBs</a></li>
+			  <li><a href="pulsars.html">Pulsars</a></li>
+              <li><a onclick="show_info()">About</a></li>
+			  <li class="active"><a onclick="playpause()" id="play">Pause</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+		<a class="brand" style="float:right; font-family:monospace" id="current_day">--</a>
+        </div><!-- /container -->
+      <div class="center" id="slider"></div>
+      </div><!-- /navbar-inner -->
+    </div><!-- /navbar -->
+	
+    <div class="hero-unit" style="margin-top:60px">
+	  <div class="center" id="main_svg"></div>
+	</div> <!-- /hero -->
+	<div class="container">	
+	  <div class="row">
+  	    <div class="span8 offset2" id="main_txt">
+		</div> <!-- /span -->
+	  </div> <!-- /row -->
+    </div> <!-- /container -->
+    </div>  <!-- /dim-wrapper -->
+
+<div style="display:none" id="about">
+	<!-- An invisible container for the About page -->
+	<h1>About</h1>
+	<p> 
+		This map shows the position of almost every confirmed supernova known to modern researchers.
+		The map is an <a target="_blank" href="http://en.wikipedia.org/wiki/Equirectangular_projection">
+		equirectangular projection</a> of the night sky 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Galactic_coordinates">in galactic coordinates</a>,
+		showing the entire sky as visible from Earth with our Milky Way galaxy running through the middle.
+		The size of each circle illustrates the relative brightness (as seen from Earth) for each supernovae.
+		The slider on top of the page lets you move through history, exploring when different supernovae were
+		first discovered.  Look to the counter in the top right to see what date range is currently shown, and
+		click on any supernova to learn more about it.
+	</p>
+	<p>	
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Supernova">A supernova</a> 
+		is the explosive death of a star.  They occur when a very massive star runs out of fuel for nuclear fusion
+		(a <a target="_blank" href="http://en.wikipedia.org/wiki/Core-collapse_supernova">core-collapse supernova</a>)
+		or when a white dwarf star exceeds its stable mass limit 
+		(a <a target="_blank" href="http://en.wikipedia.org/wiki/Thermonuclear_supernova">thermonuclear supernova</a>).
+		Supernovae are incredibly bright due to the radioactive decay of elements like nickel and cobalt but
+		they begin to fade away within a few weeks of explosion. Because most supernovae are incredibly distant they
+		appear dim to us on Earth. To find a new supernova, you must identify one new point of light in the night
+		sky amongst the billions of stars and galaxies that are always visible - it's not easy.  With modern technology,
+		however, researchers have gotten pretty good at it.  This page includes <ins id="sn_number">--</ins> supernovae.
+	</p>
+	<p> 
+		Of course, this page only shows the supernovae that researchers know about, and it doesn't even show all of them. 
+		The map above includes all objects confirmed (usually by 
+		<a target="_blank" href="http://en.wikipedia.org/wiki/Spectroscopy">
+		spectroscopic observations</a>)	to be supernovae and then published either to the 
+		<a target="_blank" href="http://www.cbat.eps.harvard.edu/">International Astronomical Union (IAU)</a>
+		or through an 
+		<a target="_blank" href="http://www.astronomerstelegram.org/">Astronomer's Telegram</a>.
+		There are many other objects identified as possible supernovae, by both professional and amateur astronomers, that never
+		get confirmed (for example, <a target="_blank" href="http://www.rochesterastronomy.org/snimages/">
+		this website</a> by David Bishop and the Rochester Academy of Sciences
+		shows both confirmed and unconfirmed supernovae that are bright right now), and of course there are
+		many, many more supernovae that escape detection.
+		Supernovae have	been exploding all across the universe for billions of years, but astronomers have only started
+		to really pay attention for the last 100 or so.  There are three reliable historical accounts of incredibly
+		bright supernovae from before the 1800's <a onclick="go_to('SN 1054A')">(the oldest is from the year 1054)</a>, 
+		though of course those ancient astronomers did not know that the bright light they saw in the night sky 
+		was a supernova.
+	</p>
+	<h4>Trends</h4>
+	<p>
+		Most of the trends and patterns visible in the animation above are due to the methods astronomers use
+		to look for and discover supernovae and are not real trends in supernovae properties.
+		For example, astronomers have identified about the same number of supernovae in the past 10 years as they did
+		in all the years before then, even though the frequency of supernova explosions in the local universe
+		has not changed significantly. Here are a few other interesting trends:
+		<div class="row">
+			<div class="span6 offset1">
+			<ul>
+				<li>Before modern telescopes and cameras, astronomers only found very bright supernovae.
+					You can see that over time, the number of faint supernovae (small circles) on
+					the map grows.</li>
+				<li>There hasn't been a supernova in the Milky Way galaxy 
+					since <a onclick="go_to('SN 1604A')">around 1600</a>. Most supernovae we see
+					occur in other galaxies, millions to billions of lightyears away.</li>
+				<li>The Milky Way blocks part of our view, and so we never see
+					extragalactic supernovae in the plane of the Milky Way (middle of the map).</li>
+				<li>There have been a few concentrated supernova searches over specific parts
+					of the sky which have found many supernovae in a short time. 
+					For example, you can clearly see this effect for the 
+					<a onclick="go_to('SN 2000bc'); highlight(['SN 2000Y','SN 2000Z','SN 2000aa','SN 2000ab','SN 2000ac','SN 2000ad','SN 2000ae','SN 2000af','SN 2000ag','SN 2000ah','SN 2000ai','SN 2000aj','SN 2000ak','SN 2000al','SN 2000am','SN 2000an','SN 2000ao','SN 2000ap','SN 2000aq','SN 2000ar','SN 2000as','SN 2000at','SN 2000av','SN 2000aw','SN 2000ax','SN 2000ay','SN 2000az','SN 2000ba','SN 2000bb','SN 2000bc','SN 2000bd','SN 2000be','SN 2000bf'])">
+					QUEST Supernova	Search</a> and the <a onclick="go_to('SN 2005fh'); highlight(['SN 2005hm','SN 2005ey','SN 2005ez','SN 2005fa','SN 2005fb','SN 2005fc','SN 2005fd','SN 2005fe','SN 2005ff','SN 2005fg','SN 2005fh','SN 2005fi','SN 2005fj','SN 2005fk','SN 2005fl','SN 2005fm','SN 2005fn','SN 2005fo','SN 2005fp','SN 2005fq','SN 2005fr','SN 2005fs','SN 2005ft','SN 2005fu','SN 2005fv','SN 2005fw','SN 2005fx','SN 2005fy','SN 2005fz','SN 2005ga','SN 2005gb','SN 2005gc','SN 2005gd','SN 2005ge','SN 2005gf','SN 2005gg','SN 2005gh','SN 2005gi','SN 2005gj','SN 2005lc','SN 2005lb','SN 2005hl','SN 2005gp','SN 2005ef','SN 2005eg','SN 2005ei','SN 2005eh','SN 2005ed','SN 2005il','SN 2005ex'])">
+					Sloan Digital Sky Survey</a></li>
+			</ul>
+			</div> <!-- /span -->
+		</div> <!-- /row -->
+	</p>
+	
+	<h4>Acknowledgements</h4>
+	<div class="row">
+		<div class="span6">
+			<p> 
+				This website was built by <a target="_blank" href="http://astro.berkeley.edu/~ishivvers/">
+				Isaac Shivvers</a>, an astrophysics graduate student
+				at UC Berkeley.  Feel free to contact me with any questions or comments at 
+				<tt><span style="unicode-bidi:bidi-override; direction: rtl;">ude.yelekreb.ortsa@srevvihsi</span></tt>.
+			</p>
+			<p>
+				The supernova data behind this site was assembled from the 
+				<a target="_blank" href="http://www.cbat.eps.harvard.edu/lists/Supernovae.html">
+				International Astronomical Union's official list</a> of named supernovae as well as the 
+				<a target="_blank" href="http://www.rochesterastronomy.org/snimages/sndateall.html">list of 
+				supernovae maintained David Bishop at the Rochester Academy of Sciences</a>. The map is
+				automatically updated with newly-discovered supernovae every week.
+			</p>
+			<p>
+				The background image of the night sky is courtesy of ESO/S.Brunier, and 
+				was produced as part of the <a target="_blank" href="http://www.eso.org/public/images/eso0932a/">
+				European Southern Observatory's	GigaGalaxy Zoom project</a>.
+			</p>
+			<p> The website itself was built using <a target="_blank" href="http://d3js.org/">D3</a>,
+				<a target="_blank" href="http://jquery.com/">jQuery</a>,
+				<a target="_blank" href="http://twitter.github.io/bootstrap/">the Twitter Bootstrap</a>,
+				and <a target="_blank" href="http://www.python.org/">Python</a>.
+				Huge thanks to all of the developers working on these great projects!
+			</p>
+			<p>
+				&copy; Isaac Shivvers, 2013
+			</p>
+		</div> <!-- /span -->
+		<div class="span2">
+			<img src="img/berkeley_seal_T.gif">
+		</div> <!-- /span -->
+	</div> <!-- /row -->
+	<br><br>
+</div>
+
+<!-- the end-of-animation info window -->
+<div id="end_message" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Questions?</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+	    Have questions about what you see here, or any trends you've noticed?<br>
+		Check out the <a onclick="show_info()" data-dismiss="modal">About</a> page for more info!
+	</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary" data-dismiss="modal" onclick="show_info()">About</button>
+  </div>
+</div>
+
+
+    <!-- more javascript
+    ================================================== -->
+	<script src="js/mylib.js"></script>
+	<script src="js/sne.json"></script>
+	<script>
+	var CHROME = /chrome/i.test(navigator.userAgent);
+	var thispage = 'sne';
+    // insert our slider into the #slider div
+	$(function() {
+		$("#slider").slider({ min:0, max:timing_array.length-1,
+			slide: function( event, ui ) {
+				clearInterval(program);
+				tstep = ui.value;
+				repeat_step();
+				pause();
+			}
+		});
+	});
+	
+	// put the number of SN into the about div
+	document.getElementById('sn_number').innerHTML = String(all_objs.length);
+	
+	// once everything has loaded, change the loading text to a play link
+	function start_show() {
+		$("#loading_txt_div").remove();
+		$("#dim_wrapper").animate({"opacity":1.0});
+		document.getElementById('dim_wrapper').style['cssText'] = "z-index: -10";
+		program = setInterval(step_forward, 100);
+		playing = true;
+	}
+	var program
+	var playing
+	var ldtxt = document.getElementById('loading_txt');
+	var ldimg = document.getElementById('loading_img');
+	var ldmsg = document.getElementById('loading_message');
+	window.onload = function() {
+		ldtxt.innerHTML = "Play";
+		ldimg.src = "img/play.gif";
+		ldmsg.innerHTML = "drag the slider on top to change the date range shown<br>click around to learn more";
+		if (CHROME != true) {
+			ldmsg.innerHTML += "<br><br>NOTE: this animation works best in recent versions of <a href='http://www.google.com/chrome'>Chrome</a>";
+		}
+		ldtxt.onclick = start_show;
+		ldimg.onclick = start_show;
+	}
+	</script>
+
+  </body>
+</html>

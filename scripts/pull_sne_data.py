@@ -11,6 +11,9 @@ from jdcal import jd2gcal
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
 
+# set to True to get helpful feedback
+VERBOSE = False
+
 # outf = '/o/ishivvers/public_html/js/sne.json'
 outf = 'sne.json'
 n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
@@ -39,11 +42,11 @@ def remove_tags( row ):
 # First pull the Rochester page info
 #####################################
 
-print 'opening page.'
+if VERBOSE: print 'opening page.'
 page = urllib2.urlopen('http://www.rochesterastronomy.org/snimages/sndateall.html').read().decode('utf8','ignore')
 table = page.split('<pre>')[1].split('</pre>')[0].split('\n')
 
-print 'parsing result'
+if VERBOSE: print 'parsing result'
 for istart, row in enumerate(table):
     if ('R.A.' in row) & ('Decl.' in row):
         # pull out the header
@@ -95,19 +98,19 @@ for row in table[istart+1:]:
         SNe.append(dictentry)
         jds.append(date2jd(date))
     except:
-        print 'skipping',row
+        if VERBOSE: print 'skipping',row
 
 
 #####################################
 # Now pull the IAUC page info
 #####################################
 
-print 'opening page.'
+if VERBOSE: print 'opening page.'
 page = urllib2.urlopen('http://www.cbat.eps.harvard.edu/lists/Supernovae.html').read().decode('utf8','ignore')
 table = page.split('<pre>')[1].split('</pre>')[0]
 entries = [remove_tags(row) for row in table.split('\n') if row]
 
-print 'parsing result'
+if VERBOSE: print 'parsing result'
 SNe2 = []
 jds2 = []
 for entry in entries[:-1]:
@@ -166,7 +169,7 @@ for entry in entries[:-1]:
             
         SNe2.append(dictentry)
     except:
-        print 'skipping',entry
+        if VERBOSE: print 'skipping',entry
 
 #####################################
 # Now merge them
@@ -176,7 +179,7 @@ for i,obj in enumerate(SNe2):
     if obj['name'] not in allnames:
         SNe.append(obj)
         jds.append( jds2[i] )
-        print 'including',obj['name']
+        if VERBOSE: print 'including',obj['name']
 
 # create a list of timesteps of len n_tsteps with a reasonable number of SNe in each
 #  take special care with first few, so that we get a clean pre-1900 range
@@ -213,7 +216,7 @@ for i,jd in enumerate(jds):
 # verify that we got the page properly, and everything is good to go
 #assert len(SNe) > 10000
 # and write to file
-print 'writing to file; found',len(SNe),'objects.'
+if VERBOSE: print 'writing to file; found',len(SNe),'objects.'
 # now write both the all_sne and the timing variables to file
 s = json.dumps(SNe)
 outfile = open(outf, 'w')
@@ -223,5 +226,5 @@ s = json.dumps(zip(explosions,datestrings))
 outfile.write('\ntiming_array = \n')
 outfile.write(s)
 outfile.close()
-print 'done!'
+if VERBOSE: print 'done!'
     

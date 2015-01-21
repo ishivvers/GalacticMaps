@@ -4,18 +4,21 @@ A script to properly format the pulsars data, saved as pulsars.txt.
 
 import re, json
 import numpy as np
-from iAstro import parse_ra, parse_dec, date2jd
+from astro.iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 from datetime import datetime
 from scipy.interpolate import interp1d, UnivariateSpline
 
+# set to True to get helpful feedback
+VERBOSE = False
+
 outf = '/o/ishivvers/public_html/js/plsrs.json'
 n_dsteps = 50 #number of distance bins to use
 
-print 'starting.'
+if VERBOSE: print 'starting.'
 lines = open('pulsars.txt','r').readlines()[7:-1]
 
-print 'parsing result'
+if VERBOSE: print 'parsing result'
 pulsars = []
 for line in lines:
     if len(line) < 4: continue
@@ -42,8 +45,8 @@ for line in lines:
                  'period':period, 'distance':distance, 'flux':flux}
         pulsars.append(entry)
     except:
-        print 'skipping',line
-        print values
+        if VERBOSE: print 'skipping',line
+        if VERBOSE: print values
 # go through and insert approximations of missing values
 # min_flux = np.min( [v['flux'] for v in pulsars if v['flux'] != None] )
 # fluxes = [v['flux']-min_flux for v in pulsars if v['flux'] != None]
@@ -108,7 +111,7 @@ for i,d in enumerate(ds):
 # verify that we got the page properly, and everything is good to go
 assert len(pulsars) > 1000
 # and write to file
-print 'writing to file'
+if VERBOSE: print 'writing to file'
 # now write both the all_sne and the timing variables to file
 s = json.dumps(pulsars)
 outfile = open(outf, 'w')

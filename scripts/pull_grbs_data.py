@@ -6,12 +6,16 @@ and format it properly.
 
 import urllib2, re, json, ephem
 import numpy as np
-from iAstro import parse_ra, parse_dec, date2jd
+from astro.iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 import os, urllib2
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
 import mechanize
+
+# set to True to print out helpful messages
+VERBOSE = False
+
 
 def remove_tags( row ):
     '''returns row with HTML tags removed, for easy parsing'''
@@ -39,7 +43,7 @@ months = {1:'Jan.',2:'Feb.',3:'Mar.',4:'Apr.',5:'May',6:'June',
 Parse the historical grbcat
 '''
 
-print 'processing grbcat'
+if VERBOSE: print 'processing grbcat'
 grbs = []
 jds = []
 t90_list = []
@@ -88,7 +92,7 @@ for row in rows[1:]:
         grbs.append(entry)
         jds.append(date2jd(time))
     except:
-        print 'skipping',row
+        if VERBOSE: print 'skipping',row
 # now insert any missing info and remove dupes
 grbcat_grbs = []
 grbcat_names = []
@@ -110,7 +114,7 @@ for iii,entry in enumerate(grbs):
     grbcat_grbs.append(entry)
     grbcat_jds.append(jds[iii])
 
-print 'processing swift table'
+if VERBOSE: print 'processing swift table'
 page = urllib2.urlopen('http://swift.gsfc.nasa.gov/docs/swift/archive/grb_table.html/'+\
                        'grb_table.php?obs=All+Observatories&year=All+Years&restrict=none&'+\
                        'grb_time=1&redshift=1&host=1&bat_ra=1&bat_dec=1&bat_t90=1&bat_fluence=1&'+\
@@ -190,7 +194,7 @@ for grb in swift_grbs:
 for grb in grbcat_grbs:
     grb['fluence'] = round(mean_fluence/max_fluence,4)
 
-print 'processing fermi table'
+if VERBOSE: print 'processing fermi table'
 rows_wanted = ['name','ra','dec','trigger_time','t90','fluence']
 br = mechanize.Browser()
 br.set_handle_robots(False)
@@ -327,7 +331,7 @@ for grb in grbs:
         grb['flag'] = 0
         
 # and write to file
-print 'writing to file'
+if VERBOSE: print 'writing to file'
 # now write both the all_sne and the timing variables to file
 s = json.dumps(grbs)
 outfile = open(outf, 'w')
@@ -337,6 +341,6 @@ s = json.dumps(zip(explosions,datestrings))
 outfile.write('\ntiming_array = \n')
 outfile.write(s)
 outfile.close()
-print 'done!'
+if VERBOSE: print 'done!'
 
 

@@ -1,9 +1,0 @@
-SNe, GRBs, and Pulsars!
-
-- test with other browsers
- - Safari: scroll to about goes too far (fkit, leave it be for now.  Looks like window.scroll doesn't work!?)
-   Firefox: look into lack of gradient (fkit, just let them be coreless. Looks like the opacity gradient doesn't work.)
-
-Quick way to run:
-$ python -m SimpleHTTPServer
-

@@ -16,7 +16,6 @@ import mechanize
 # set to True to print out helpful messages
 VERBOSE = False
 
-
 def remove_tags( row ):
     '''returns row with HTML tags removed, for easy parsing'''
     # strip tags
@@ -34,6 +33,8 @@ def remove_tags( row ):
     
 
 outf = '/o/ishivvers/public_html/js/grbs.json'
+# outf = 'grbs.json'
+
 n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
 # note: this is just a value to aim for, doesn't get it exactly
 
@@ -115,63 +116,43 @@ for iii,entry in enumerate(grbs):
     grbcat_jds.append(jds[iii])
 
 if VERBOSE: print 'processing swift table'
-page = urllib2.urlopen('http://swift.gsfc.nasa.gov/docs/swift/archive/grb_table.html/'+\
-                       'grb_table.php?obs=All+Observatories&year=All+Years&restrict=none&'+\
-                       'grb_time=1&redshift=1&host=1&bat_ra=1&bat_dec=1&bat_t90=1&bat_fluence=1&'+\
-                       'view.x=26&view.y=10&view=submit').read()
-table = page.split('<table')[1].split('</table>')[0]
-entries = table.split('</tr>')
+br = mechanize.Browser()
+br.set_handle_robots(False)
+ws = 'http://swift.gsfc.nasa.gov/archive/grb_table/table.php?'+\
+                        'obs=All+Observatories&year=All+Years&restrict=none&grb_time=1&'+\
+                        'redshift=1&bat_ra=1&bat_dec=1&bat_t90=1&bat_fluence=1'
+br.open(ws)
+# find the link to the tab-delimited response
+br.follow_link( text_regex=re.compile('grb_table.+\.txt') )
+lines = br.response().readlines()
 swift_grbs = []
 swift_jds = []
 swift_fluences = []
-for entry in entries[1:]:
-    values = []
-    row = entry.split('</td>')
-    # make sure this is not an empty row
-    if len(row) < 2:
-        continue
-    # periodically, there is a header row
-    if 'GRB' in row[0]:
-        continue
-    # some sources are not localized
-    if 'n/a' in row[2] or 'n/a' in row[3]:
-        continue
-    for i in range(len(row)):
-        if i in [2,3]:
-            # do some gymnastics to get the proper RA and Dec out
-            try:
-                values.append(remove_tags(row[i].split('<br />')[1]).strip())
-            except:
-                try:
-                    values.append(remove_tags(row[i].split('<br>')[1]).strip())
-                except:
-                    values.append(remove_tags(row[i]).strip())
-        else:
-            values.append(remove_tags(row[i]).strip())
-    name = values[0]
-    obsstring = values[1]
-    decimal = re.findall('\.\d+',obsstring)
-    if decimal:
-        obsstring = obsstring.split(decimal[0])[0]
-    # use the name to get the date
-    obsstring = re.findall('\d+', name)[0] + ' ' + obsstring
+for line in lines[1:]:
+    line = line.split('\t')
     try:
-        time = datetime.strptime(obsstring, '%y%m%d %H:%M:%S')
+        name = line[0]
+        # get the date out of the name
+        dt_string = name[:6]+' '+line[1]
+        time = datetime.strptime(dt_string, '%y%m%d %H:%M:%S')
+        # get coordinates
+        ra = parse_ra(line[2])
+        dec = parse_dec(line[3])
+        # and now the other values
+        try:
+            t90 = float(line[4])
+        except:
+            t90 = mean_t90
+        try:
+            fluence = float(line[5])
+            swift_fluences.append(fluence)
+        except:
+            fluence = None
     except:
-        time = datetime.strptime(re.findall('\d+', name)[0], '%y%m%d')
-    timestr = '{} {}, {} {}:{}:{}'.format( months[time.month], time.day, time.year, time.hour, time.minute, time.second)
-    ra = parse_ra(values[2])
-    dec = parse_dec(values[3])
-    try:
-        t90 = float(values[4])
-    except:
-        t90 = mean_t90
-    try:
-        fluence = float(values[5])
-        swift_fluences.append(fluence)
-    except:
-        fluence = None
+        continue
+    # build the entry
     observatory = 'SWIFT'
+    timestr = '{} {}, {} {}:{}:{}'.format( months[time.month], time.day, time.year, time.hour, time.minute, time.second)
     coords = ephem.Equatorial(np.deg2rad(ra), np.deg2rad(dec))
     galcoords = ephem.Galactic(coords)
     entry = {'name':name, 'eqcoords':[round(ra,6), round(dec,6)], 'observatory':observatory, 't90':round(t90,4),
@@ -180,6 +161,7 @@ for entry in entries[1:]:
         entry['fluence'] = fluence
     swift_grbs.append(entry)
     swift_jds.append(date2jd(time))
+
 # put the fluences onto an absolute scale between 0 and 1
 min_fluence = np.min(swift_fluences)
 swift_fluences = np.array(swift_fluences) - min_fluence

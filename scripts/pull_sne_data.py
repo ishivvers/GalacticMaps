@@ -10,9 +10,10 @@ from astro.iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
+from BeautifulSoup import BeautifulSoup
 
 # set to True to get helpful feedback
-VERBOSE = False
+VERBOSE = True
 
 # outf = '/o/ishivvers/public_html/js/sne.json'
 outf = 'sne.json'
@@ -42,53 +43,120 @@ def remove_tags( row ):
 # First pull the Rochester page info
 #####################################
 
-if VERBOSE: print 'opening page.'
-page = urllib2.urlopen('http://www.rochesterastronomy.org/snimages/sndateall.html').read().decode('utf8','ignore')
-table = page.split('<pre>')[1].split('</pre>')[0].split('\n')
+def download_historical_rochester_info():
+    """
+    Parse the huge rochester SN page and produce a dictionary akin
+     to that produced by download_current_rochester_info.
+    """
+    uri = 'http://www.rochesterastronomy.org/snimages/sndateall.html'
+    page = urllib2.urlopen( uri ).read()
+    soup = BeautifulSoup(page)
+    table = soup.findAll("table")[1]
 
-if VERBOSE: print 'parsing result'
-for istart, row in enumerate(table):
-    if ('R.A.' in row) & ('Decl.' in row):
-        # pull out the header
-        ira = row.index('R.A.')
-        idec = row.index('Decl.')
-        iobs = row.index('Earliest')
-        ihost = row.index('Host')
-        ityp = row.index('Type')
-        imax = row.index('Max')
-        break
+    C_ROCHESTER_DICT = {}
+    rows = table.findChildren( recursive=False )
+    for row in rows[1:]:
+        vals = row.findChildren( recursive=False )
+        if len(vals) == 1:
+            continue
+        try:
+            ra = parse_ra( vals[0].getText() )
+            dec = parse_dec( vals[1].getText() )
+            date = vals[2].getText()
+            host = vals[6].getText()
+            sn_type = vals[7].getText()
+            mag = float(vals[9].getText())
+            name = vals[10].getText()
+            altName = vals[11].getText()
+            discoverer = '' # not present in this table
+            ref_link = '' # not present in this table
+            
+            C_ROCHESTER_DICT[name] = [host, ra, dec, sn_type, ref_link, date, discoverer, mag]
+        except:
+            # just continue on errors
+            # print row
+            pass
+    return C_ROCHESTER_DICT
+
+def download_current_rochester_info():
+    """
+    Parse the current rochester SN page and produce a dictionary including
+     all the rows we can understand.
+    This page has quite a few entries with slightly odd entries, and this script
+     is my best effort to parse most of them, but there are definitely some that
+     break this and are not included.  Oh well.
+    """
+    uri = 'http://www.rochesterastronomy.org/snimages/snactive.html'
+    page = urllib2.urlopen( uri ).read()
+    soup = BeautifulSoup(page)
+    tables = soup.findAll("table")[1:]
+
+    C_ROCHESTER_DICT = {}
+    for t in tables:
+        rows = t.findChildren( recursive=False )
+        for row in rows[1:]:
+            vals = row.findChildren( recursive=False )
+            if len(vals) == 1:
+                continue
+            try:
+                name = vals[0].getText()
+                host = vals[1].getText()
+                ra = parse_ra( vals[2].getText() )
+                dec = parse_dec( vals[3].getText() )
+                sn_type = vals[7].getText()
+                ref_link = None # not present in this table
+                date = vals[11].getText()
+                discoverer = vals[12].getText()
+                C_ROCHESTER_DICT[name] = [host, ra, dec, sn_type, ref_link, date, discoverer, mag]
+            except:
+                # just continue on errors
+                # print row
+                pass
+    return C_ROCHESTER_DICT
+
+##################################
+
+if VERBOSE: print 'opening historical Rochester page and parsing result.'
+rocd = download_historical_rochester_info()
 SNe = []
 jds = []
-for row in table[istart+1:]:
+
+for sn in rocd.keys():
     try:
         # get coords
-        snRA = parse_ra( row[ira:].strip().split(' ',1)[0] )
-        snDec = parse_dec( row[idec:].strip().split(' ',1)[0] )
+        snRA = rocd[sn][1]
+        snDec = rocd[sn][2]
         # get Gregorian and Julian discovery date
-        date = datetime.strptime( row[iobs:].strip().split(' ',1)[0].split('.')[0], '%Y/%m/%d')
+        date = datetime.strptime( rocd[sn][5].split('.')[0], '%Y/%m/%d')
         datestr = '{} {}, {}'.format( months[date.month], date.day, date.year)
         # get the type, host, and max brightness
-        sntype = row[ityp:].split(' ',1)[0]
+        sntype = rocd[sn][3]
         if sntype == 'unk':
             sntype = None
             raise Exception('not confirmed.')
-        if sntype in ['LBV', 'LBV?']:
+        if sntype in ['CV', 'CV?', 'LBV', 'LBV?']:
             raise Exception('not a sn')
-        gal = row[ihost:ityp].strip()
-        mag = round(float( row[imax:].strip().split(' ',1)[0].strip('*') ), 2 )
-        name = row.split('"_self">')[1].split('</a>')[0]
+        gal = rocd[sn][0]
+        mag = rocd[sn][7]
+        name = sn
         # some are bad:
         if name in ['PS1-14vd']:
             raise Exception('bullshit!')
         # add 'SN' if needed
         if re.search('^\d{4}.*', name) and 'Possible' not in name:
             name = 'SN '+name
-        authors = row.split('</a>')[1].strip()
+        authors = rocd[sn][6] # usually blank from this page
 
         # now assemble this for the website, but only if it's after year 2000
         #  (use other page as early authority, for simplicity).
         if date.year < 2000:
             continue
+        # put an extra couple tests here, since mis-parsed magnitudes can be noticible
+        if mag > 30:
+            raise Exception('Misparsed: Mag too faint')
+        if mag < 3.0:
+            # 1987A was mag 4.5
+            raise Exception('Misparsed: Mag too bright')
         dictentry = {'name':name, 'galaxy':gal, 'date':datestr,
                      'magnitude':mag, 'type':sntype, 'authors':authors}
         coords = ephem.Equatorial(np.deg2rad(snRA), np.deg2rad(snDec))
@@ -97,10 +165,61 @@ for row in table[istart+1:]:
         dictentry['coords'] = [round(np.rad2deg(galcoords.lon),2), round(np.rad2deg(galcoords.lat),2)]
         SNe.append(dictentry)
         jds.append(date2jd(date))
-    except:
-        if VERBOSE: print 'skipping',row
+    except Exception as e:
+        if VERBOSE: print 'skipping',sn,rocd[sn],":",e
 
+if VERBOSE: print 'opening current Rochester page and parsing result.'
+rocd = download_current_rochester_info()
+SNe2 = []
+jds2 = []
 
+for sn in rocd.keys():
+    try:
+        # get coords
+        snRA = rocd[sn][1]
+        snDec = rocd[sn][2]
+        # get Gregorian and Julian discovery date
+        date = datetime.strptime( rocd[sn][5].split('.')[0], '%Y/%m/%d')
+        datestr = '{} {}, {}'.format( months[date.month], date.day, date.year)
+        # get the type, host, and max brightness
+        sntype = rocd[sn][3]
+        if sntype == 'unk':
+            sntype = None
+            raise Exception('not confirmed.')
+        if sntype in ['CV', 'CV?', 'LBV', 'LBV?']:
+            raise Exception('not a sn')
+        gal = rocd[sn][0]
+        mag = rocd[sn][7]
+        name = sn
+        # some are bad:
+        if name in ['PS1-14vd']:
+            raise Exception('bullshit!')
+        # add 'SN' if needed
+        if re.search('^\d{4}.*', name) and 'Possible' not in name:
+            name = 'SN '+name
+        # the rochester page no longer includes discoverers
+        authors = ''
+
+        # now assemble this for the website, but only if it's after year 2000
+        #  (use other page as early authority, for simplicity).
+        if date.year < 2000:
+            continue
+        # put an extra couple tests here, since mis-parsed magnitudes can be noticible
+        if mag > 30:
+            raise Exception('Misparsed: Mag too faint')
+        if mag < 3.0:
+            # 1987A was mag 4.5
+            raise Exception('Misparsed: Mag too bright')
+        dictentry = {'name':name, 'galaxy':gal, 'date':datestr,
+                     'magnitude':mag, 'type':sntype, 'authors':authors}
+        coords = ephem.Equatorial(np.deg2rad(snRA), np.deg2rad(snDec))
+        dictentry['eqcoords'] = [round(snRA,6), round(snDec,6)]
+        galcoords = ephem.Galactic(coords)
+        dictentry['coords'] = [round(np.rad2deg(galcoords.lon),2), round(np.rad2deg(galcoords.lat),2)]
+        SNe2.append(dictentry)
+        jds2.append(date2jd(date))
+    except Exception as e:
+        if VERBOSE: print 'skipping',sn,rocd[sn],":",e
 #####################################
 # Now pull the IAUC page info
 #####################################
@@ -111,8 +230,8 @@ table = page.split('<pre>')[1].split('</pre>')[0]
 entries = [remove_tags(row) for row in table.split('\n') if row]
 
 if VERBOSE: print 'parsing result'
-SNe2 = []
-jds2 = []
+SNe3 = []
+jds3 = []
 for entry in entries[:-1]:
     try:
         name = entry[:8].strip()
@@ -132,7 +251,6 @@ for entry in entries[:-1]:
             except ValueError:
                 date = datetime.strptime(entry[25:35].strip(), '%Y')
                 datestr = '{}'.format(date.year)
-        jds2.append(date2jd(date))
         try:
             galRA = parse_ra(entry[37:44])
             galDec = parse_dec(entry[45:51])
@@ -166,8 +284,9 @@ for entry in entries[:-1]:
             dictentry['eqcoords'] = [round(galRA,6), round(galDec,6)]
         galcoords = ephem.Galactic(coords)
         dictentry['coords'] = [round(np.rad2deg(galcoords.lon),2), round(np.rad2deg(galcoords.lat),2)]
-            
-        SNe2.append(dictentry)
+        
+        jds3.append(date2jd(date))
+        SNe3.append(dictentry)
     except:
         if VERBOSE: print 'skipping',entry
 
@@ -180,6 +299,26 @@ for i,obj in enumerate(SNe2):
         SNe.append(obj)
         jds.append( jds2[i] )
         if VERBOSE: print 'including',obj['name']
+allnames = [o['name'] for o in SNe]
+for i,obj in enumerate(SNe3):
+    if obj['name'] not in allnames:
+        SNe.append(obj)
+        jds.append( jds3[i] )
+        if VERBOSE: print 'including',obj['name']
+
+# sort them by explosion date
+jds = np.array(jds)
+order = jds.argsort()
+jds = jds[order]
+sortedSNe = []
+for i in order:
+    sortedSNe.append( SNe[i] )
+SNe = sortedSNe
+# and, so that we can bin them, makes sure that there are no exactly
+#  matched JDs (np.digitize requires true monotonicity)
+for i in range(1,len(jds)):
+    if jds[i] == jds[i-1]:
+        jds[i] += 0.001
 
 # create a list of timesteps of len n_tsteps with a reasonable number of SNe in each
 #  take special care with first few, so that we get a clean pre-1900 range

@@ -1,5 +1,5 @@
 '''
-A script to properly format the pulsars data, saved as pulsars.txt.
+A script to properly format the pulsars data.
 '''
 
 import re, json
@@ -15,6 +15,7 @@ VERBOSE = False
 outf = '/o/ishivvers/public_html/js/plsrs.json'
 n_dsteps = 50 #number of distance bins to use
 
+# first the ATNF data
 if VERBOSE: print 'starting.'
 lines = open('pulsars.txt','r').readlines()[7:-1]
 

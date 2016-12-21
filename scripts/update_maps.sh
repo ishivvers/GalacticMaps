@@ -7,6 +7,6 @@ cd /o/ishivvers/MapsWebsiteSupport
 echo '--------------------------------------------------' >> updated.log
 date >> updated.log
 
-/o/ishivvers/my_python/bin/python pull_sne_data.py && echo 'SN update success' >> updated.log
-/o/ishivvers/my_python/bin/python pull_grbs_data.py && echo 'GRB update success' >> updated.log
+/big_scr5/ishivvers/anaconda/bin/python pull_sne_data.py && echo 'SN update success' >> updated.log
+/big_scr5/ishivvers/anaconda/bin/python pull_grbs_data.py && echo 'GRB update success' >> updated.log
 

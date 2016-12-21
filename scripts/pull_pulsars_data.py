@@ -1,5 +1,5 @@
 '''
-A script to properly format the pulsars data.
+A script to properly format the pulsars data, saved as pulsars.txt.
 '''
 
 import re, json
@@ -10,12 +10,11 @@ from datetime import datetime
 from scipy.interpolate import interp1d, UnivariateSpline
 
 # set to True to get helpful feedback
-VERBOSE = False
+VERBOSE = True
 
 outf = '/o/ishivvers/public_html/js/plsrs.json'
 n_dsteps = 50 #number of distance bins to use
 
-# first the ATNF data
 if VERBOSE: print 'starting.'
 lines = open('pulsars.txt','r').readlines()[7:-1]
 

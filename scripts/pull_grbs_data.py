@@ -6,7 +6,7 @@ and format it properly.
 
 import urllib2, re, json, ephem
 import numpy as np
-from astro.iAstro import parse_ra, parse_dec, date2jd
+from iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 import os, urllib2
 from datetime import datetime
@@ -15,6 +15,17 @@ import mechanize
 
 # set to True to print out helpful messages
 VERBOSE = False
+
+outf = '../js/grbs.json'
+
+n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
+# note: this is just a value to aim for, doesn't get it exactly
+
+months = {1:'Jan.',2:'Feb.',3:'Mar.',4:'Apr.',5:'May',6:'June',
+          7:'July',8:'Aug.',9:'Sep.',10:'Oct.',11:'Nov.',12:'Dec.'}
+'''
+Parse the historical grbcat
+'''
 
 def remove_tags( row ):
     '''returns row with HTML tags removed, for easy parsing'''
@@ -30,19 +41,6 @@ def remove_tags( row ):
             if not intag:
                 outstr.append(char)
     return ''.join(outstr)
-    
-
-outf = '/o/ishivvers/public_html/js/grbs.json'
-# outf = 'grbs.json'
-
-n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
-# note: this is just a value to aim for, doesn't get it exactly
-
-months = {1:'Jan.',2:'Feb.',3:'Mar.',4:'Apr.',5:'May',6:'June',
-          7:'July',8:'Aug.',9:'Sep.',10:'Oct.',11:'Nov.',12:'Dec.'}
-'''
-Parse the historical grbcat
-'''
 
 if VERBOSE: print 'processing grbcat'
 grbs = []

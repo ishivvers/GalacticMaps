@@ -6,7 +6,7 @@ and format it properly.
 
 import urllib2, re, json, ephem
 import numpy as np
-from astro.iAstro import parse_ra, parse_dec, date2jd
+from iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
@@ -15,8 +15,8 @@ from BeautifulSoup import BeautifulSoup
 # set to True to get helpful feedback
 VERBOSE = False
 
-outf = '/o/ishivvers/public_html/js/sne.json'
-# outf = 'sne.json'
+outf = '../js/sne.json'
+
 n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
 
 #months = {1:'January',2:'February',3:'March',4:'April',5:'May',6:'June',

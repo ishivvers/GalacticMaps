@@ -199,8 +199,8 @@ function show_SN_info(i) {
 		htmlstring += '<li>Identified by: '+all_objs[i].authors+'</li>';
 	}
 	htmlstring += '<li><a target="_blank" href="' + 
-	              'http://simbad.u-strasbg.fr/simbad/sim-id?Ident=SN+' + all_objs[i].name +
-	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info</a></li>';
+	              'http://simbad.u-strasbg.fr/simbad/sim-id?Ident=' + all_objs[i].name +
+	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info (if available)</a></li>';
     htmlstring += '</ul><br></div></div>';
     // now put into the visible page
     document.getElementById('main_txt').innerHTML = htmlstring;
@@ -223,7 +223,7 @@ function show_GRB_info(i) {
 	}
 	htmlstring += '<li><a target="_blank" href="' + 
 	              'http://simbad.u-strasbg.fr/simbad/sim-id?Ident=GRB+' + all_objs[i].name +
-	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info</a></li>';
+	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info (if available)</a></li>';
     htmlstring += '</ul><br></div></div>';
     // now put into the visible page
     document.getElementById('main_txt').innerHTML = htmlstring;
@@ -245,7 +245,7 @@ function show_PLSR_info(i) {
 	htmlstring += '<li>Distance: '+d3.round(all_objs[i].distance)+' lightyears</li>';	
 	htmlstring += '<li><a target="_blank" href="' + 
 	              'http://simbad.u-strasbg.fr/simbad/sim-id?Ident=PSR+' + all_objs[i].name.replace('+','%2B') +
-	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info</a></li>';
+	              '&NbIdent=1&Radius=2&Radius.unit=arcmin">More info (if available)</a></li>';
 	// htmlstring += '<li><a target="_blank" href="http://www.wolframalpha.com/input/?i=psr+' + 
 	//               all_objs[i].name.replace('+','%2B') + '">More Info B</a></li>'  // doesn't work for all pulsars
     htmlstring += '</ul><br></div></div>';

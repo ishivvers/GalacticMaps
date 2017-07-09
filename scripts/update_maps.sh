@@ -1,12 +1,22 @@
-#!/usr/local/bin/bash
-### a script to update the data behind the maps pages ###
+#!/bin/bash
+source ~/.profile
 
-source /o/ishivvers/.bashrc
-cd /o/ishivvers/MapsWebsiteSupport
+##########################################################################
+cd $WEBPAGEDIR/maps/scripts/
 
 echo '--------------------------------------------------' >> updated.log
 date >> updated.log
 
-/big_scr5/ishivvers/anaconda/bin/python pull_sne_data.py && echo 'SN update success' >> updated.log
-/big_scr5/ishivvers/anaconda/bin/python pull_grbs_data.py && echo 'GRB update success' >> updated.log
+python pull_sne_data.py && echo 'SN update success' >> updated.log
+python pull_grbs_data.py && echo 'GRB update success' >> updated.log
 
+git add -u
+git commit -m 'SNe & GRB lists updated'
+git push
+
+##########################################################################
+cd $WEBPAGEDIR/
+
+# git add -u
+# git commit -m 'Maps updated'
+# git push

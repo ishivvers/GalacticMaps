@@ -19,6 +19,6 @@ git push
 ##########################################################################
 cd $WEBPAGEDIR/
 
-git add -u
+git add maps
 git commit -m 'Maps updated'
 git push

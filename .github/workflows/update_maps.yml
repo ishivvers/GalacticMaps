@@ -1,8 +1,9 @@
 name: Update
 
 on:
+  push:
   schedule:
-    - cron: "*/2 * * * *"
+    - cron: '0 2 * * 0'  # every sunday at 2am
 
 jobs:
   update:

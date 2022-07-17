@@ -14,7 +14,7 @@ from scipy.interpolate import UnivariateSpline
 import mechanize
 
 # set to True to print out helpful messages
-VERBOSE = True
+VERBOSE = False
 
 outf = 'js/grbs.json'
 
@@ -112,6 +112,7 @@ for iii,entry in enumerate(grbs):
     grbcat_names.append(entry['name'])
     grbcat_grbs.append(entry)
     grbcat_jds.append(jds[iii])
+print(f"adding {len(grbcat_grbs)} from grbcat")
 
 if VERBOSE: print('processing swift table')
 br = mechanize.Browser()
@@ -131,7 +132,7 @@ for line in lines[1:]:
     try:
         name = line[0]
         # get the date out of the name
-        dt_string = name[:6]+' '+line[1]
+        dt_string = name[:6]+' '+line[1].split('.')[0]
         time = datetime.strptime(dt_string, '%y%m%d %H:%M:%S')
         # get coordinates
         ra = parse_ra(line[2])
@@ -173,6 +174,7 @@ for grb in swift_grbs:
 # use the mean SWIFT fluences to insert values for GRBCAT
 for grb in grbcat_grbs:
     grb['fluence'] = round(mean_fluence/max_fluence,4)
+print(f"adding {len(swift_grbs)} from swift")
 
 if VERBOSE: print('processing fermi table')
 rows_wanted = ['name','ra','dec','trigger_time','t90','fluence']
@@ -262,6 +264,7 @@ for i,grb in enumerate(grbs):
     else:
         fermi_grbs.append(grb)
         fermi_jds.append(jds[i])
+print(f"adding {len(fermi_grbs)} from fermi")
 # at this point, there appear to be no double names, so I will not worry about
 #  adding in an A,B,C, etc.
 
@@ -311,8 +314,8 @@ for grb in grbs:
         grb['flag'] = 0
         
 # and write to file
-if VERBOSE: print('writing to file')
-# now write both the all_sne and the timing variables to file
+print(f"writing {len(grbs)} to file")
+# now write both the grb and the timing variables to file
 s = json.dumps(grbs)
 outfile = open(outf, 'w')
 outfile.write('all_objs = \n')

@@ -3,7 +3,7 @@ name: Update
 on:
   push:
   schedule:
-    - cron: '0 2 * * 0'  # every sunday at 2am
+    - cron: "0 2 * * 0"
 
 jobs:
   update:

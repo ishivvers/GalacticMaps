@@ -13,7 +13,7 @@ from scipy.interpolate import UnivariateSpline
 from bs4 import BeautifulSoup
 
 # set to True to get helpful feedback
-VERBOSE = True
+VERBOSE = False
 
 outf = 'js/sne.json'
 
@@ -50,13 +50,13 @@ def download_historical_rochester_info():
     """
     uri = 'http://www.rochesterastronomy.org/snimages/sndateall.html'
     page = urllib.request.urlopen( uri ).read()
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, features="html5lib")
     table = soup.findAll("table")[1]
 
     C_ROCHESTER_DICT = {}
-    rows = table.findChildren( recursive=False )
+    rows = table.findAll("tr")
     for row in rows[1:]:
-        vals = row.findChildren( recursive=False )
+        vals = row.findAll("td")
         if len(vals) == 1:
             continue
         try:
@@ -88,14 +88,14 @@ def download_current_rochester_info():
     """
     uri = 'http://www.rochesterastronomy.org/snimages/snactive.html'
     page = urllib.request.urlopen( uri ).read()
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, features="html5lib")
     tables = soup.findAll("table")[1:]
 
     C_ROCHESTER_DICT = {}
     for t in tables:
-        rows = t.findChildren( recursive=False )
+        rows = t.findAll("tr")
         for row in rows[1:]:
-            vals = row.findChildren( recursive=False )
+            vals = row.findAll("td")
             if len(vals) == 1:
                 continue
             try:
@@ -103,14 +103,13 @@ def download_current_rochester_info():
                 host = vals[1].getText()
                 ra = parse_ra( vals[2].getText() )
                 dec = parse_dec( vals[3].getText() )
+                mag = float(vals[9].getText())
                 sn_type = vals[7].getText()
                 ref_link = None # not present in this table
                 date = vals[11].getText()
                 discoverer = vals[12].getText()
                 C_ROCHESTER_DICT[name] = [host, ra, dec, sn_type, ref_link, date, discoverer, mag]
             except:
-                # just continue on errors
-                # print row
                 pass
     return C_ROCHESTER_DICT
 
@@ -167,6 +166,7 @@ for sn in list(rocd.keys()):
         jds.append(date2jd(date))
     except Exception as e:
         if VERBOSE: print(('skipping',sn,rocd[sn],":",e))
+print(f'adding {len(SNe)} from historical rochester page')
 
 if VERBOSE: print('opening current Rochester page and parsing result.')
 rocd = download_current_rochester_info()
@@ -220,6 +220,8 @@ for sn in list(rocd.keys()):
         jds2.append(date2jd(date))
     except Exception as e:
         if VERBOSE: print(('skipping',sn,rocd[sn],":",e))
+print(f'adding {len(SNe2)} from rochester page')
+
 #####################################
 # Now pull the IAUC page info
 #####################################
@@ -289,6 +291,7 @@ for entry in entries[:-1]:
         SNe3.append(dictentry)
     except:
         if VERBOSE: print(('skipping',entry))
+print(f'adding {len(SNe3)} from iauc page')
 
 #####################################
 # Now merge them
@@ -355,7 +358,7 @@ for i,jd in enumerate(jds):
 # verify that we got the page properly, and everything is good to go
 #assert len(SNe) > 10000
 # and write to file
-if VERBOSE: print(('writing to file; found',len(SNe),'objects.'))
+print(f'writing {len(SNe)} to file')
 # now write both the all_sne and the timing variables to file
 s = json.dumps(SNe)
 outfile = open(outf, 'w')

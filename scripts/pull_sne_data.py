@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 # set to True to get helpful feedback
 VERBOSE = False
 
-outf = '../js/sne.json'
+outf = 'js/sne.json'
 
 n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
 

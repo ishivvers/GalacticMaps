@@ -1,0 +1,39 @@
+name: Update
+
+on:
+  push:
+  schedule:
+    - cron: '0 2 * * 0'  # every sunday at 2am
+
+jobs:
+  update:
+    name: Update map data
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v1
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Update SNE
+        run: |
+          python scripts/pull_sne_data.py
+
+      - name: Update GRBs
+        run: |
+          python scripts/pull_grbs_data.py
+
+      - name: Push results
+        uses: test-room-7/action-update-file@v1
+        with:
+          file-path: js/
+          commit-msg: SNe & GRB lists updated
+          github-token: ${{ secrets.GITHUB_TOKEN }}

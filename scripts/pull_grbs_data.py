@@ -4,11 +4,11 @@ http://www.cbat.eps.harvard.edu/lists/Supernovae.html
 and format it properly.
 '''
 
-import urllib.request, urllib.error, urllib.parse, re, json, ephem
+import re, json, ephem
 import numpy as np
 from iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
-import os, urllib.request, urllib.error, urllib.parse
+import urllib.request, urllib.error, urllib.parse
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
 import mechanize
@@ -16,7 +16,7 @@ import mechanize
 # set to True to print out helpful messages
 VERBOSE = False
 
-outf = '../js/grbs.json'
+outf = 'js/grbs.json'
 
 n_tsteps = 600 # if 100ms per step, this works out to 1 minute of playtime
 # note: this is just a value to aim for, doesn't get it exactly

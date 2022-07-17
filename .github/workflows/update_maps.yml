@@ -34,6 +34,6 @@ jobs:
       - name: Push results
         uses: test-room-7/action-update-file@v1
         with:
-          file-path: js/
+          file-path: js/*.json
           commit-msg: SNe & GRB lists updated
           github-token: ${{ secrets.GITHUB_TOKEN }}

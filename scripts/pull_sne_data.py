@@ -13,7 +13,7 @@ from scipy.interpolate import UnivariateSpline
 from bs4 import BeautifulSoup
 
 # set to True to get helpful feedback
-VERBOSE = False
+VERBOSE = True
 
 outf = 'js/sne.json'
 

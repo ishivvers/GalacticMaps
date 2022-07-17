@@ -14,7 +14,7 @@ from scipy.interpolate import UnivariateSpline
 import mechanize
 
 # set to True to print out helpful messages
-VERBOSE = False
+VERBOSE = True
 
 outf = 'js/grbs.json'
 

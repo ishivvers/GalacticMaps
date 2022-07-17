@@ -46,7 +46,7 @@ if VERBOSE: print('processing grbcat')
 grbs = []
 jds = []
 t90_list = []
-rows = [r.strip() for r in open('grbcat.txt','r').readlines() if r[0]=='|']
+rows = [r.strip() for r in open('scripts/grbcat.txt','r').readlines() if r[0]=='|']
 for row in rows[1:]:
     try:
         items = row.split('|')

@@ -1,9 +1,9 @@
 name: Update
 
 on:
-  push:
   schedule:
-    - cron: '0 2 * * 0'  # every sunday at 2am
+    # - cron: '0 2 * * 0'  # every sunday at 2am
+    - cron: '*/5 * * * *'  # every 5 minutes
 
 jobs:
   update:
@@ -23,17 +23,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r scripts/requirements.txt
 
-      - name: Update SNE
-        run: |
-          python scripts/pull_sne_data.py
+      # - name: Update SNE
+      #   run: |
+      #     python scripts/pull_sne_data.py
 
       - name: Update GRBs
         run: |
           python scripts/pull_grbs_data.py
 
-      - name: Push results
-        uses: test-room-7/action-update-file@v1
-        with:
-          file-path: js/
-          commit-msg: SNe & GRB lists updated
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Push results
+      #   uses: test-room-7/action-update-file@v1
+      #   with:
+      #     file-path: js/
+      #     commit-msg: SNe & GRB lists updated
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -15,10 +15,10 @@ VERBOSE = True
 outf = '/o/ishivvers/public_html/js/plsrs.json'
 n_dsteps = 50 #number of distance bins to use
 
-if VERBOSE: print 'starting.'
+if VERBOSE: print('starting.')
 lines = open('pulsars.txt','r').readlines()[7:-1]
 
-if VERBOSE: print 'parsing result'
+if VERBOSE: print('parsing result')
 pulsars = []
 for line in lines:
     if len(line) < 4: continue
@@ -45,8 +45,8 @@ for line in lines:
                  'period':period, 'distance':distance, 'flux':flux}
         pulsars.append(entry)
     except:
-        if VERBOSE: print 'skipping',line
-        if VERBOSE: print values
+        if VERBOSE: print('skipping',line)
+        if VERBOSE: print(values)
 # go through and insert approximations of missing values
 # min_flux = np.min( [v['flux'] for v in pulsars if v['flux'] != None] )
 # fluxes = [v['flux']-min_flux for v in pulsars if v['flux'] != None]
@@ -73,7 +73,7 @@ for entry in pulsars:
 ds = [p['distance'] for p in pulsars]
 trim_ds = list(set(ds))
 trim_ds.sort()
-x = range(len(trim_ds))
+x = list(range(len(trim_ds)))
 X = np.linspace(0,len(trim_ds),n_dsteps)
 dsteps = (100*np.round(np.interp(X, x,trim_ds)/100)).tolist()
 dsteps[0] = 0.
@@ -111,13 +111,13 @@ for i,d in enumerate(ds):
 # verify that we got the page properly, and everything is good to go
 assert len(pulsars) > 1000
 # and write to file
-if VERBOSE: print 'writing to file'
+if VERBOSE: print('writing to file')
 # now write both the all_sne and the timing variables to file
 s = json.dumps(pulsars)
 outfile = open(outf, 'w')
 outfile.write('all_objs = \n')
 outfile.write(s)
-s = json.dumps(zip(pulsers,diststrings))
+s = json.dumps(list(zip(pulsers,diststrings)))
 outfile.write('\ntiming_array = \n')
 outfile.write(s)
 outfile.close()

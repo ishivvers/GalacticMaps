@@ -4,11 +4,11 @@ http://www.cbat.eps.harvard.edu/lists/Supernovae.html
 and format it properly.
 '''
 
-import urllib2, re, json, ephem
+import urllib.request, urllib.error, urllib.parse, re, json, ephem
 import numpy as np
 from iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
-import os, urllib2
+import os, urllib.request, urllib.error, urllib.parse
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
 import mechanize
@@ -42,7 +42,7 @@ def remove_tags( row ):
                 outstr.append(char)
     return ''.join(outstr)
 
-if VERBOSE: print 'processing grbcat'
+if VERBOSE: print('processing grbcat')
 grbs = []
 jds = []
 t90_list = []
@@ -91,14 +91,14 @@ for row in rows[1:]:
         grbs.append(entry)
         jds.append(date2jd(time))
     except:
-        if VERBOSE: print 'skipping',row
+        if VERBOSE: print('skipping',row)
 # now insert any missing info and remove dupes
 grbcat_grbs = []
 grbcat_names = []
 grbcat_jds = []
 mean_t90 = round(np.mean(t90_list),4)
 for iii,entry in enumerate(grbs):
-    if t90 not in entry.keys():
+    if t90 not in list(entry.keys()):
         entry['t90'] = mean_t90
     if entry['name'] in grbcat_names:
         # ignore the catalog observatories, otherwise simply keep the most recent listing of the grb
@@ -113,7 +113,7 @@ for iii,entry in enumerate(grbs):
     grbcat_grbs.append(entry)
     grbcat_jds.append(jds[iii])
 
-if VERBOSE: print 'processing swift table'
+if VERBOSE: print('processing swift table')
 br = mechanize.Browser()
 br.set_handle_robots(False)
 ws = 'http://swift.gsfc.nasa.gov/archive/grb_table/table.php?'+\
@@ -122,7 +122,7 @@ ws = 'http://swift.gsfc.nasa.gov/archive/grb_table/table.php?'+\
 br.open(ws)
 # find the link to the tab-delimited response
 br.follow_link( text_regex=re.compile('grb_table.+\.txt') )
-lines = br.response().readlines()
+lines = [l.decode() for l in br.response().readlines()]
 swift_grbs = []
 swift_jds = []
 swift_fluences = []
@@ -155,7 +155,7 @@ for line in lines[1:]:
     galcoords = ephem.Galactic(coords)
     entry = {'name':name, 'eqcoords':[round(ra,6), round(dec,6)], 'observatory':observatory, 't90':round(t90,4),
              'date':timestr, 'coords':[round(np.rad2deg(galcoords.lon),2), round(np.rad2deg(galcoords.lat),2)]}
-    if fluence > 0:
+    if fluence is not None:
         entry['fluence'] = fluence
     swift_grbs.append(entry)
     swift_jds.append(date2jd(time))
@@ -166,7 +166,7 @@ swift_fluences = np.array(swift_fluences) - min_fluence
 max_fluence = np.max(swift_fluences)
 mean_fluence = np.mean(swift_fluences)
 for grb in swift_grbs:
-    if 'fluence' in grb.keys():
+    if 'fluence' in list(grb.keys()):
         grb['fluence'] = round(grb['fluence']/max_fluence,4)
     else:
         grb['fluence'] = round(mean_fluence/max_fluence,4)
@@ -174,7 +174,7 @@ for grb in swift_grbs:
 for grb in grbcat_grbs:
     grb['fluence'] = round(mean_fluence/max_fluence,4)
 
-if VERBOSE: print 'processing fermi table'
+if VERBOSE: print('processing fermi table')
 rows_wanted = ['name','ra','dec','trigger_time','t90','fluence']
 br = mechanize.Browser()
 br.set_handle_robots(False)
@@ -205,14 +205,14 @@ for mode in display_modes:
 # finally, submit the form
 response = br.submit()
 src = response.read()
-rows = src.split('Select All')[1].split('Data Products Retrieval')[0].split('\n')
+rows = src.decode().split('Select All')[1].split('Data Products Retrieval')[0].split('\n')
 # now go through and actually process them
 grbs = []
 jds = []
 fermi_fluences = []
 for row in rows:
     if row[:20] != '<a target="moreinfo"': continue
-    values = remove_tags(row).split('|')
+    values = remove_tags(row).strip().split('|')
     name = values[1].strip().strip('GRB')[:6] #use only the date (not the time) for GRB name
     ra = parse_ra(values[2])
     dec = parse_dec(values[3])
@@ -236,7 +236,7 @@ for row in rows:
     galcoords = ephem.Galactic(coords)
     entry = {'name':name, 'eqcoords':[round(ra,6), round(dec,6)], 'observatory':observatory, 't90':round(t90,4),
              'date':timestr, 'coords':[round(np.rad2deg(galcoords.lon),2), round(np.rad2deg(galcoords.lat),2)]}
-    if fluence > 0:
+    if fluence is not None:
         entry['fluence'] = fluence
     grbs.append(entry)
     jds.append(date2jd(time))
@@ -246,7 +246,7 @@ fermi_fluences = np.array(fermi_fluences) - min_fluence
 max_fluence = np.max(fermi_fluences)
 mean_fluence = np.mean(fermi_fluences)
 for grb in grbs:
-    if 'fluence' in grb.keys():
+    if 'fluence' in list(grb.keys()):
         grb['fluence'] = round(grb['fluence']/max_fluence,4)
     else:
         grb['fluence'] = round(mean_fluence/max_fluence,4)
@@ -272,7 +272,7 @@ jds = grbcat_jds + swift_jds + fermi_jds
 # create a list of timesteps of len n_tsteps with a reasonable number of GRBs in each
 trim_jds = list(set(jds))
 trim_jds.sort()
-timesteps = np.round(np.array(trim_jds)[:: len(trim_jds)/n_tsteps ],1)
+timesteps = np.round(np.array(trim_jds)[:: len(trim_jds)//n_tsteps ],1)
 # make sure the last day is after the last actual explosion
 timesteps[-1] = round(trim_jds[-1] + 1, 1)
 # make sure that first day is before the first explosion
@@ -311,16 +311,16 @@ for grb in grbs:
         grb['flag'] = 0
         
 # and write to file
-if VERBOSE: print 'writing to file'
+if VERBOSE: print('writing to file')
 # now write both the all_sne and the timing variables to file
 s = json.dumps(grbs)
 outfile = open(outf, 'w')
 outfile.write('all_objs = \n')
 outfile.write(s)
-s = json.dumps(zip(explosions,datestrings))
+s = json.dumps(list(zip(explosions,datestrings)))
 outfile.write('\ntiming_array = \n')
 outfile.write(s)
 outfile.close()
-if VERBOSE: print 'done!'
+if VERBOSE: print('done!')
 
 

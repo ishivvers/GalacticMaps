@@ -4,13 +4,13 @@ http://www.cbat.eps.harvard.edu/lists/Supernovae.html
 and format it properly.
 '''
 
-import urllib2, re, json, ephem
+import urllib.request, urllib.parse, urllib.error, re, json, ephem
 import numpy as np
 from iAstro import parse_ra, parse_dec, date2jd
 from jdcal import jd2gcal
 from datetime import datetime
 from scipy.interpolate import UnivariateSpline
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 # set to True to get helpful feedback
 VERBOSE = False
@@ -49,7 +49,7 @@ def download_historical_rochester_info():
      to that produced by download_current_rochester_info.
     """
     uri = 'http://www.rochesterastronomy.org/snimages/sndateall.html'
-    page = urllib2.urlopen( uri ).read()
+    page = urllib.request.urlopen( uri ).read()
     soup = BeautifulSoup(page)
     table = soup.findAll("table")[1]
 
@@ -87,7 +87,7 @@ def download_current_rochester_info():
      break this and are not included.  Oh well.
     """
     uri = 'http://www.rochesterastronomy.org/snimages/snactive.html'
-    page = urllib2.urlopen( uri ).read()
+    page = urllib.request.urlopen( uri ).read()
     soup = BeautifulSoup(page)
     tables = soup.findAll("table")[1:]
 
@@ -116,12 +116,12 @@ def download_current_rochester_info():
 
 ##################################
 
-if VERBOSE: print 'opening historical Rochester page and parsing result.'
+if VERBOSE: print('opening historical Rochester page and parsing result.')
 rocd = download_historical_rochester_info()
 SNe = []
 jds = []
 
-for sn in rocd.keys():
+for sn in list(rocd.keys()):
     try:
         # get coords
         snRA = rocd[sn][1]
@@ -166,14 +166,14 @@ for sn in rocd.keys():
         SNe.append(dictentry)
         jds.append(date2jd(date))
     except Exception as e:
-        if VERBOSE: print 'skipping',sn,rocd[sn],":",e
+        if VERBOSE: print(('skipping',sn,rocd[sn],":",e))
 
-if VERBOSE: print 'opening current Rochester page and parsing result.'
+if VERBOSE: print('opening current Rochester page and parsing result.')
 rocd = download_current_rochester_info()
 SNe2 = []
 jds2 = []
 
-for sn in rocd.keys():
+for sn in list(rocd.keys()):
     try:
         # get coords
         snRA = rocd[sn][1]
@@ -219,17 +219,17 @@ for sn in rocd.keys():
         SNe2.append(dictentry)
         jds2.append(date2jd(date))
     except Exception as e:
-        if VERBOSE: print 'skipping',sn,rocd[sn],":",e
+        if VERBOSE: print(('skipping',sn,rocd[sn],":",e))
 #####################################
 # Now pull the IAUC page info
 #####################################
 
-if VERBOSE: print 'opening page.'
-page = urllib2.urlopen('http://www.cbat.eps.harvard.edu/lists/Supernovae.html').read().decode('utf8','ignore')
+if VERBOSE: print('opening page.')
+page = urllib.request.urlopen('http://www.cbat.eps.harvard.edu/lists/Supernovae.html').read().decode('utf8','ignore')
 table = page.split('<pre>')[1].split('</pre>')[0]
 entries = [remove_tags(row) for row in table.split('\n') if row]
 
-if VERBOSE: print 'parsing result'
+if VERBOSE: print('parsing result')
 SNe3 = []
 jds3 = []
 for entry in entries[:-1]:
@@ -288,7 +288,7 @@ for entry in entries[:-1]:
         jds3.append(date2jd(date))
         SNe3.append(dictentry)
     except:
-        if VERBOSE: print 'skipping',entry
+        if VERBOSE: print(('skipping',entry))
 
 #####################################
 # Now merge them
@@ -298,13 +298,13 @@ for i,obj in enumerate(SNe2):
     if obj['name'] not in allnames:
         SNe.append(obj)
         jds.append( jds2[i] )
-        if VERBOSE: print 'including',obj['name']
+        if VERBOSE: print(('including',obj['name']))
 allnames = [o['name'] for o in SNe]
 for i,obj in enumerate(SNe3):
     if obj['name'] not in allnames:
         SNe.append(obj)
         jds.append( jds3[i] )
-        if VERBOSE: print 'including',obj['name']
+        if VERBOSE: print(('including',obj['name']))
 
 # sort them by explosion date
 jds = np.array(jds)
@@ -325,7 +325,7 @@ for i in range(1,len(jds)):
 trim_jds = list(set(jds))
 trim_jds.sort()
 timesteps = [trim_jds[0], trim_jds[4]]
-x = range(len(trim_jds[5:]))
+x = list(range(len(trim_jds[5:])))
 spline = UnivariateSpline(x,trim_jds[5:], s=1E5)
 X = np.linspace(0,len(trim_jds[4:]),n_tsteps)
 timesteps += spline(X).tolist()
@@ -355,15 +355,15 @@ for i,jd in enumerate(jds):
 # verify that we got the page properly, and everything is good to go
 #assert len(SNe) > 10000
 # and write to file
-if VERBOSE: print 'writing to file; found',len(SNe),'objects.'
+if VERBOSE: print(('writing to file; found',len(SNe),'objects.'))
 # now write both the all_sne and the timing variables to file
 s = json.dumps(SNe)
 outfile = open(outf, 'w')
 outfile.write('all_objs = \n')
 outfile.write(s)
-s = json.dumps(zip(explosions,datestrings))
+s = json.dumps(list(zip(explosions,datestrings)))
 outfile.write('\ntiming_array = \n')
 outfile.write(s)
 outfile.close()
-if VERBOSE: print 'done!'
+if VERBOSE: print('done!')
     
